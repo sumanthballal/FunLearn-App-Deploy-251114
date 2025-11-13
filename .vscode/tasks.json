@@ -1,0 +1,29 @@
+﻿{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Create venv (Windows PowerShell)",
+      "type": "shell",
+      "command": "python -m venv .venv",
+      "presentation": { "reveal": "always" }
+    },
+    {
+      "label": "Activate venv (Windows PowerShell)",
+      "type": "shell",
+      "command": ".\\.venv\\Scripts\\Activate.ps1",
+      "presentation": { "reveal": "always" }
+    },
+    {
+      "label": "Install backend deps",
+      "type": "shell",
+      "command": ".\\.venv\\Scripts\\python -m pip install -r backend\\requirements.txt",
+      "presentation": { "reveal": "always" }
+    },
+    {
+      "label": "Run Flask (dev)",
+      "type": "shell",
+      "command": ".\\.venv\\Scripts\\python backend\\app.py",
+      "presentation": { "reveal": "always" }
+    }
+  ]
+}

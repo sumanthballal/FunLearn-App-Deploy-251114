@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 120">
+  <rect width="100%" height="100%" fill="#fff8f2"/>
+  <g transform="translate(30,15)">
+    <ellipse cx="50" cy="50" rx="40" ry="28" fill="#f5a623"/>
+    <polygon points="20,40 40,10 60,40" fill="#f48e2b">
+      <animate attributeName="points" dur="2s" values="20,40 40,10 60,40;22,42 40,12 58,42;20,40 40,10 60,40" repeatCount="indefinite"/>
+    </polygon>
+    <circle cx="38" cy="48" r="5" fill="#fff"/>
+  </g>
+</svg>

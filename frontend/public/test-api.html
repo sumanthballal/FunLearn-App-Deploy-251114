@@ -1,0 +1,24 @@
+﻿<!doctype html>
+<html>
+<head>
+  <meta charset='utf-8'>
+  <title>FunLearn API Test</title>
+</head>
+<body>
+  <h1>FunLearn API Test</h1>
+  <div id='out'>Loading...</div>
+  <script>
+    async function run() {
+      const out = document.getElementById('out');
+      try {
+        const m = await fetch('/api/modules').then(r => r.json());
+        const a = await fetch('/api/activities/Math').then(r => r.json());
+        out.innerHTML = '<h2>Modules</h2><pre>'+JSON.stringify(m,null,2)+'</pre><h2>Math activities</h2><pre>'+JSON.stringify(a,null,2)+'</pre>';
+      } catch (err) {
+        out.textContent = 'Error: ' + err;
+      }
+    }
+    run();
+  </script>
+</body>
+</html>

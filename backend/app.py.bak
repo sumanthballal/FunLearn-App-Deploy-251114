@@ -1,0 +1,195 @@
+﻿from flask import Flask, request, jsonify
+from flask_cors import CORS
+import base64
+import io
+from PIL import Image
+import numpy as np
+import os
+import logging
+
+from backend.model import infer_emotion
+
+app = Flask(__name__, static_folder="../frontend", static_url_path="/")
+CORS(app)
+logging.basicConfig(level=logging.INFO)
+
+@app.route("/")
+def index():
+    # Serve frontend index (if you want to open http://localhost:5000/)
+    return app.send_static_file("index.html")
+
+@app.route("/api/infer", methods=["POST"])
+def api_infer():
+    try:
+        data = request.get_json(force=True)
+        image_b64 = data.get("image_b64", "")
+        if not image_b64:
+            return jsonify({"error": "No image_b64 provided"}), 400
+
+        # Strip data URL prefix if present
+        if "," in image_b64:
+            image_b64 = image_b64.split(",", 1)[1]
+
+        image_bytes = base64.b64decode(image_b64)
+        image = Image.open(io.BytesIO(image_bytes)).convert("RGB")
+        image_np = np.array(image)
+
+        label = infer_emotion(image_np)
+        return jsonify({"emotion": label})
+    except Exception as e:
+        logging.exception("Error in /api/infer")
+        return jsonify({"error": str(e)}), 500
+
+if __name__ == "__main__":
+    # For local dev only. Run: python backend/app.py
+    app.run(host="0.0.0.0", port=5000, debug=True)
+
+@app.route('/health')
+def health():
+    return jsonify({'ok': True})
+# --- GET /api/activities (added automatically) ---
+import os, json as _json
+@app.route("/api/activities", methods=["GET"])
+def api_activities():
+    try:
+        path = os.path.join(os.path.dirname(__file__), "activities.json")
+        with open(path, "r", encoding="utf-8") as f:
+            data = _json.load(f)
+        return jsonify(data)
+    except FileNotFoundError:
+        return jsonify({"error":"activities file not found"}), 404
+    except Exception as e:
+        app.logger.exception("activities error")
+        return jsonify({"error":"internal","detail":str(e)}), 500
+# --- POST /api/recommend (added automatically) ---
+from backend.recommender import recommend as _recommend if False else None
+# fallback import handled below
+
+@app.route("/api/recommend", methods=["POST"])
+def api_recommend():
+    try:
+        data = request.get_json(force=True)
+    except Exception:
+        return jsonify({"error":"invalid json"}), 400
+    required = ("current_module","current_activity","emotion")
+    if not data or not all(k in data for k in required):
+        return jsonify({"error":"missing required fields (current_module,current_activity,emotion)"}), 400
+    current_module = data.get("current_module")
+    current_activity = data.get("current_activity")
+    emotion = data.get("emotion")
+    history = data.get("history", {})
+    try:
+        # import recommender dynamically to avoid top-level import issues
+        try:
+            from recommender import recommend as _recommend
+        except Exception:
+            try:
+                from backend.recommender import recommend as _recommend
+            except Exception:
+                _recommend = None
+        if _recommend is None:
+            return jsonify({"error":"recommender not available"}), 500
+        recs = _recommend(current_module, current_activity, emotion, history)
+        return jsonify({"recommendations": recs})
+    except Exception as e:
+        app.logger.exception("Recommend error")
+        return jsonify({"error":"internal error","detail":str(e)}), 500
+
+
+# --- GET /api/activities (added automatically) ---
+import os, json as _json
+@app.route("/api/activities", methods=["GET"])
+def api_activities():
+    try:
+        path = os.path.join(os.path.dirname(__file__), "activities.json")
+        with open(path, "r", encoding="utf-8") as f:
+            data = _json.load(f)
+        return jsonify(data)
+    except FileNotFoundError:
+        return jsonify({"error":"activities file not found"}), 404
+    except Exception as e:
+        app.logger.exception("activities error")
+        return jsonify({"error":"internal","detail":str(e)}), 500
+# --- POST /api/recommend (added automatically) ---
+from backend.recommender import recommend as _recommend if False else None
+# fallback import handled below
+
+@app.route("/api/recommend", methods=["POST"])
+def api_recommend():
+    try:
+        data = request.get_json(force=True)
+    except Exception:
+        return jsonify({"error":"invalid json"}), 400
+    required = ("current_module","current_activity","emotion")
+    if not data or not all(k in data for k in required):
+        return jsonify({"error":"missing required fields (current_module,current_activity,emotion)"}), 400
+    current_module = data.get("current_module")
+    current_activity = data.get("current_activity")
+    emotion = data.get("emotion")
+    history = data.get("history", {})
+    try:
+        # import recommender dynamically to avoid top-level import issues
+        try:
+            from recommender import recommend as _recommend
+        except Exception:
+            try:
+                from backend.recommender import recommend as _recommend
+            except Exception:
+                _recommend = None
+        if _recommend is None:
+            return jsonify({"error":"recommender not available"}), 500
+        recs = _recommend(current_module, current_activity, emotion, history)
+        return jsonify({"recommendations": recs})
+    except Exception as e:
+        app.logger.exception("Recommend error")
+        return jsonify({"error":"internal error","detail":str(e)}), 500
+
+
+# --- GET /api/activities (added automatically) ---
+import os, json as _json
+@app.route("/api/activities", methods=["GET"])
+def api_activities():
+    try:
+        path = os.path.join(os.path.dirname(__file__), "activities.json")
+        with open(path, "r", encoding="utf-8") as f:
+            data = _json.load(f)
+        return jsonify(data)
+    except FileNotFoundError:
+        return jsonify({"error":"activities file not found"}), 404
+    except Exception as e:
+        app.logger.exception("activities error")
+        return jsonify({"error":"internal","detail":str(e)}), 500
+# --- POST /api/recommend (added automatically) ---
+from backend.recommender import recommend as _recommend if False else None
+# fallback import handled below
+
+@app.route("/api/recommend", methods=["POST"])
+def api_recommend():
+    try:
+        data = request.get_json(force=True)
+    except Exception:
+        return jsonify({"error":"invalid json"}), 400
+    required = ("current_module","current_activity","emotion")
+    if not data or not all(k in data for k in required):
+        return jsonify({"error":"missing required fields (current_module,current_activity,emotion)"}), 400
+    current_module = data.get("current_module")
+    current_activity = data.get("current_activity")
+    emotion = data.get("emotion")
+    history = data.get("history", {})
+    try:
+        # import recommender dynamically to avoid top-level import issues
+        try:
+            from recommender import recommend as _recommend
+        except Exception:
+            try:
+                from backend.recommender import recommend as _recommend
+            except Exception:
+                _recommend = None
+        if _recommend is None:
+            return jsonify({"error":"recommender not available"}), 500
+        recs = _recommend(current_module, current_activity, emotion, history)
+        return jsonify({"recommendations": recs})
+    except Exception as e:
+        app.logger.exception("Recommend error")
+        return jsonify({"error":"internal error","detail":str(e)}), 500
+

@@ -1,0 +1,173 @@
+﻿import React, { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import WebcamEmotion from "./components/WebcamEmotion";
+import SubjectAudio from "./components/SubjectAudio";
+import Game2048 from "./components/games/Game2048";
+import MathSortNumbers from "./components/games/MathSortNumbers";
+import MathPrimeFinder from "./components/games/MathPrimeFinder";
+import SciencePlanetOrder from "./components/games/SciencePlanetOrder";
+import SciencePeriodicMatch from "./components/games/SciencePeriodicMatch";
+import ScienceFoodChain from "./components/games/ScienceFoodChain";
+import EnglishWordMatch from "./components/games/EnglishWordMatch";
+import EnglishStorySequencer from "./components/games/EnglishStorySequencer";
+import EnglishLetterPop from "./components/games/EnglishLetterPop";
+import ArtColorMix from "./components/games/ArtColorMix";
+import ArtPatternMaker from "./components/games/ArtPatternMaker";
+import ArtMemoryPairs from "./components/games/ArtMemoryPairs";
+import RecommendPanel from "./components/RecommendPanel";
+import ProgressPanel from "./components/ProgressPanel";
+import BadgesPanel from "./components/BadgesPanel";
+
+export default function LessonShell(){
+  const { module } = useParams();
+  const navigate = useNavigate();
+  const [emotion, setEmotion] = useState<string>("neutral");
+  const [activities, setActivities] = useState<any[]>([]);
+  const [showPanel, setShowPanel] = useState<boolean>(false);
+  const [selectedGame, setSelectedGame] = useState<string | null>(null);
+  const modKey = (module ?? "").toString();
+
+  useEffect(()=>{
+    let mounted = true;
+    (async ()=>{
+      if (!modKey) { setActivities([]); return; }
+      try {
+        const res = await fetch(`/api/activities/${encodeURIComponent(modKey)}`);
+        if (!res.ok) throw new Error("bad activities");
+        const data = await res.json();
+        if (mounted && data.activities) setActivities(data.activities);
+      } catch {
+        if (mounted) setActivities([]);
+      }
+    })();
+    return ()=>{ mounted = false; };
+  },[modKey]);
+
+  const openActivity = (id:string)=> navigate(`/activity/${encodeURIComponent(id)}`);
+
+  return (
+    <div className="min-h-screen p-8 bg-sky-50">
+      {/* Fixed webcam top-right */}
+      <div style={{position:'fixed', top:16, right:16, zIndex:50}}>
+        <div className="bg-white/80 backdrop-blur rounded-xl shadow p-2">
+          <WebcamEmotion
+            user="local-user"
+            module={modKey}
+            onEmotion={(e)=>{ setEmotion(e.emotion); setShowPanel(true); }}
+            intervalMs={10000}
+          />
+        </div>
+      </div>
+
+      <div className="container pr-[360px]">
+        <div>
+          <h1 className="text-3xl font-bold text-sky-700 mb-4">
+            <span role="img" aria-label="book">ðŸ“š</span> {module}
+          </h1>
+          <div className="mb-4">
+            <SubjectAudio subject={modKey} />
+          </div>
+          <p className="mb-4">Detected emotion: <b>{emotion}</b></p>
+
+          <h2 className="text-xl font-semibold mb-2">Learn through Games</h2>
+          {/* Subject-specific game switcher */}
+          <div className="flex flex-wrap gap-3 mb-4">
+            {modKey==='math' && (
+              <>
+                <button onClick={()=>setSelectedGame('2048')} className={`px-4 py-2 rounded ${selectedGame==='2048'?'bg-sky-600 text-white':'bg-sky-100 text-sky-800'}`}>2048 (6x6)</button>
+                <button onClick={()=>setSelectedGame('sort')} className={`px-4 py-2 rounded ${selectedGame==='sort'?'bg-sky-600 text-white':'bg-sky-100 text-sky-800'}`}>Sort Numbers</button>
+                <button onClick={()=>setSelectedGame('prime')} className={`px-4 py-2 rounded ${selectedGame==='prime'?'bg-sky-600 text-white':'bg-sky-100 text-sky-800'}`}>Prime Finder</button>
+              </>
+            )}
+            {modKey==='science' && (
+              <>
+                <button onClick={()=>setSelectedGame('planet')} className={`px-4 py-2 rounded ${selectedGame==='planet'?'bg-emerald-600 text-white':'bg-emerald-100 text-emerald-800'}`}>Planet Order</button>
+                <button onClick={()=>setSelectedGame('periodic')} className={`px-4 py-2 rounded ${selectedGame==='periodic'?'bg-emerald-600 text-white':'bg-emerald-100 text-emerald-800'}`}>Periodic Match</button>
+                <button onClick={()=>setSelectedGame('food')} className={`px-4 py-2 rounded ${selectedGame==='food'?'bg-emerald-600 text-white':'bg-emerald-100 text-emerald-800'}`}>Food Chain</button>
+              </>
+            )}
+            {modKey==='reading' && (
+              <>
+                <button onClick={()=>setSelectedGame('match')} className={`px-4 py-2 rounded ${selectedGame==='match'?'bg-purple-600 text-white':'bg-purple-100 text-purple-800'}`}>Word Match</button>
+                <button onClick={()=>setSelectedGame('seq')} className={`px-4 py-2 rounded ${selectedGame==='seq'?'bg-purple-600 text-white':'bg-purple-100 text-purple-800'}`}>Story Sequencer</button>
+                <button onClick={()=>setSelectedGame('pop')} className={`px-4 py-2 rounded ${selectedGame==='pop'?'bg-purple-600 text-white':'bg-purple-100 text-purple-800'}`}>Letter Pop</button>
+              </>
+            )}
+            {modKey==='art' && (
+              <>
+                <button onClick={()=>setSelectedGame('mix')} className={`px-4 py-2 rounded ${selectedGame==='mix'?'bg-pink-600 text-white':'bg-pink-100 text-pink-800'}`}>Color Mix</button>
+                <button onClick={()=>setSelectedGame('pattern')} className={`px-4 py-2 rounded ${selectedGame==='pattern'?'bg-pink-600 text-white':'bg-pink-100 text-pink-800'}`}>Pattern Maker</button>
+                <button onClick={()=>setSelectedGame('memory')} className={`px-4 py-2 rounded ${selectedGame==='memory'?'bg-pink-600 text-white':'bg-pink-100 text-pink-800'}`}>Memory Pairs</button>
+              </>
+            )}
+          </div>
+
+          {/* Fullscreen game viewport */}
+          <div className="mb-10">
+            <div className="bg-white rounded-2xl shadow p-5 w-full min-h-[480px] flex items-center justify-center">
+              {!selectedGame && <div className="text-gray-500">Pick a game above to start</div>}
+              {selectedGame && (
+                <div className="w-full">
+                  {modKey==='math' && selectedGame==='2048' && <Game2048/>}
+                  {modKey==='math' && selectedGame==='sort' && <MathSortNumbers/>}
+                  {modKey==='math' && selectedGame==='prime' && <MathPrimeFinder/>}
+
+                  {modKey==='science' && selectedGame==='planet' && <SciencePlanetOrder/>}
+                  {modKey==='science' && selectedGame==='periodic' && <SciencePeriodicMatch/>}
+                  {modKey==='science' && selectedGame==='food' && <ScienceFoodChain/>}
+
+                  {modKey==='reading' && selectedGame==='match' && <EnglishWordMatch/>}
+                  {modKey==='reading' && selectedGame==='seq' && <EnglishStorySequencer/>}
+                  {modKey==='reading' && selectedGame==='pop' && <EnglishLetterPop/>}
+
+                  {modKey==='art' && selectedGame==='mix' && <ArtColorMix/>}
+                  {modKey==='art' && selectedGame==='pattern' && <ArtPatternMaker/>}
+                  {modKey==='art' && selectedGame==='memory' && <ArtMemoryPairs/>}
+                </div>
+              )}
+            </div>
+          </div>
+
+          <h2 className="text-xl font-semibold mb-2">Activities</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {activities.length===0 ? <div className="text-gray-600">No activities found.</div> :
+              activities.map(a=>(
+                <div key={a.id} className="bg-white p-4 rounded shadow flex justify-between items-center">
+                  <div>
+                    <div className="font-bold">{a.title}</div>
+                    <div className="text-sm text-gray-600">{a.duration ?? ""}</div>
+                  </div>
+                  <div>
+                    <button onClick={()=>openActivity(a.id)} className="px-3 py-1 rounded bg-sky-500 text-white">Open</button>
+                  </div>
+                </div>
+              ))
+            }
+          </div>
+
+          {/* Panels moved below to avoid overlap with webcam */}
+          <div className="mt-8">
+            <button onClick={()=>setShowPanel(s=>!s)} className="mb-4 px-3 py-1 rounded bg-sky-500 text-white">Toggle Recommendations</button>
+            <RecommendPanel emotion={emotion} open={showPanel} />
+          </div>
+          <div className="mt-6">
+            <BadgesPanel user="local-user" />
+          </div>
+          <div className="mt-6">
+            <ProgressPanel user="local-user" />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function GameCard({title, body}:{title:string; body: React.ReactNode}){
+  return (
+    <div className="bg-white rounded-2xl shadow p-5 max-w-full">
+      <div className="font-semibold mb-2">{title}</div>
+      {body}
+    </div>
+  );
+}
+

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 120">
+  <rect width="100%" height="100%" fill="#f7fdff"/>
+  <g transform="translate(20,10)">
+    <circle cx="40" cy="40" r="22" fill="#a8e6cf"/>
+    <path d="M20 80 C60 40, 120 40, 160 80" stroke="#7fd3c7" stroke-width="6" fill="none" stroke-linecap="round"/>
+    <circle cx="160" cy="80" r="6" fill="#ffd3a5">
+      <animate attributeName="r" values="6;10;6" dur="1.2s" repeatCount="indefinite"/>
+    </circle>
+  </g>
+</svg>

@@ -1,0 +1,16 @@
+[
+  {
+    "user": "test-user",
+    "module": "Math",
+    "activity": "math-lesson-1",
+    "timestamp": "2025-11-09T07:38:47.281254Z"
+  },
+  {
+    "user": "local-user",
+    "module": "Reading",
+    "activity": "reading-rhymes",
+    "timestamp": "2025-11-11T18:20:19.296051Z",
+    "score": 6,
+    "total": 6
+  }
+]

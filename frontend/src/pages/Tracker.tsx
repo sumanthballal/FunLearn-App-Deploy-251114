@@ -1,0 +1,43 @@
+﻿import React, { useEffect, useMemo, useState } from "react";
+import EmotionChart, { EmotionPoint } from "../components/EmotionChart";
+
+export default function Tracker(){
+  const [points, setPoints] = useState<EmotionPoint[]>([]);
+  const sessionId = (typeof window !== 'undefined') ? (localStorage.getItem('funlearn_session') || 'guest') : 'guest';
+  const API = (import.meta as any).env?.VITE_API_URL || '';
+
+  useEffect(()=>{
+    let mounted = true;
+    let timer: number | undefined;
+
+    const load = async () => {
+      try{
+        const res = await fetch(`${API}/emotions/${encodeURIComponent(sessionId)}`);
+        if (res.ok){
+          const j = await res.json();
+          const arr = (j.emotions || []) as Array<{timestamp:string, emotion:string}>;
+          const pts: EmotionPoint[] = arr.map(r=> ({ t: r.timestamp, emotion: (r.emotion||'neutral') }));
+          if (mounted) setPoints(pts.reverse());
+        }
+      }catch(e){ /* ignore */ }
+    };
+
+    load();
+    timer = window.setInterval(load, 10000) as unknown as number;
+    return ()=>{ mounted=false; if (timer) window.clearInterval(timer); };
+  }, [API, sessionId]);
+
+  const latest = useMemo(()=> points.length>0 ? points[points.length-1].emotion : 'neutral', [points]);
+
+  return (
+    <div className="min-h-screen p-6 bg-sky-50">
+      <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow p-6">
+        <h1 className="text-2xl font-semibold text-sky-700 mb-4">Emotion Tracker</h1>
+        <EmotionChart data={points} />
+        <div className="mt-2 text-sm text-gray-600">Current: <b>{latest}</b></div>
+      </div>
+    </div>
+  );
+}
+
+

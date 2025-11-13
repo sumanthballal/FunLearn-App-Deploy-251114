@@ -1,0 +1,25 @@
+{
+  "modules": [
+    "Math",
+    "Science",
+    "Reading",
+    "Art"
+  ],
+  "activities": [
+  {"id": "math-lesson-1", "module": "Math", "title": "Addition Basics", "type": "lesson", "duration": 20, "difficulty": "easy", "description": "Learn how to add two numbers with examples and visuals.", "media": {"type": "image", "src": "/assets/default-activity.svg"}},
+    {"id": "math-practice-1", "module": "Math", "title": "Quick Add Practice", "type": "practice", "duration": 10, "difficulty": "easy", "description": "Practice simple additions with hints.", "media": null},
+  {"id": "math-fun-1", "module": "Math", "title": "Math Balloon Pop", "type": "fun", "duration": 5, "difficulty": "easy", "description": "Pop balloons with the right answers in a fun mini-game!", "media": {"type": "image", "src": "/assets/math-balloon.svg"}, "video": {"url": "https://www.youtube.com/watch?v=1TiCw4qVd9w"}},
+
+  {"id": "science-lesson-1", "module": "Science", "title": "The Water Cycle", "type": "lesson", "duration": 20, "difficulty": "medium", "description": "Discover evaporation, condensation, and precipitation.", "media": {"type": "image", "src": "/assets/default-activity.svg"}},
+    {"id": "science-practice-1", "module": "Science", "title": "Label the Cycle", "type": "practice", "duration": 10, "difficulty": "easy", "description": "Drag-and-drop the right labels to complete the cycle.", "media": null},
+  {"id": "science-fun-1", "module": "Science", "title": "Cloud Maker", "type": "fun", "duration": 5, "difficulty": "easy", "description": "Try a fun experiment to make a mini-cloud at home (with help).", "media": {"type": "image", "src": "/assets/science-cycle.svg"}, "video": {"url": "https://www.youtube.com/watch?v=VQ6ZfN7ZQ9k"}},
+
+  {"id": "reading-lesson-1", "module": "Reading", "title": "Story Time: Brave Fox", "type": "lesson", "duration": 20, "difficulty": "easy", "description": "Read along with animations and highlights.", "media": {"type": "image", "src": "/assets/default-activity.svg"}},
+    {"id": "reading-practice-1", "module": "Reading", "title": "Find the Main Idea", "type": "practice", "duration": 10, "difficulty": "easy", "description": "Pick the best sentence that captures the story.", "media": null},
+  {"id": "reading-fun-1", "module": "Reading", "title": "Make a Comic", "type": "fun", "duration": 5, "difficulty": "easy", "description": "Create a quick 3-panel comic from the story.", "media": {"type": "image", "src": "/assets/reading-fox.svg"}, "video": {"url": "https://www.youtube.com/watch?v=pT4ZlN1x2PY"}},
+
+  {"id": "art-lesson-1", "module": "Art", "title": "Color Theory Basics", "type": "lesson", "duration": 20, "difficulty": "easy", "description": "Primary, secondary colors and more!", "media": {"type": "image", "src": "/assets/default-activity.svg"}},
+    {"id": "art-practice-1", "module": "Art", "title": "Mix and Match", "type": "practice", "duration": 10, "difficulty": "easy", "description": "Practice mixing colors to make new ones.", "media": null},
+  {"id": "art-fun-1", "module": "Art", "title": "Doodle Time!", "type": "fun", "duration": 5, "difficulty": "easy", "description": "Make a fast doodle inspired by music.", "media": {"type": "image", "src": "/assets/art-doodle.svg"}, "video": {"url": "https://www.youtube.com/watch?v=0fKg7e37bQE"}}
+  ]
+}

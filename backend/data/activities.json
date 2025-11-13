@@ -1,0 +1,531 @@
+{
+  "modules": ["Math", "Science", "Reading", "Art"],
+  "activities": [
+    {
+      "id": "math-addition",
+      "title": "Fun with Addition! ➕",
+      "description": "Learn basic addition with fun examples 🎯",
+      "type": "lesson",
+      "module": "Math",
+      "duration": "10 min",
+      "difficulty": "easy",
+      "content": {
+        "intro": "Welcome to the exciting world of addition! 🌟",
+        "steps": [
+          {
+            "title": "Understanding Addition 📚",
+            "content": "Addition is like putting things together. When you have 2 apples 🍎🍎 and get 2 more 🍎🍎, you now have 4 apples! 2 + 2 = 4"
+          },
+          {
+            "title": "Let's Practice! 💪",
+            "content": "Try these fun examples:\n- Three balloons 🎈🎈🎈 plus two more 🎈🎈 equals five balloons!\n- Four stars ⭐⭐⭐⭐ plus three stars ⭐⭐⭐ equals seven stars!"
+          },
+          {
+            "title": "Story: Toys on a Shelf 🧸",
+            "content": "There are 3 teddy bears on a shelf and 2 more are added. How many bears are smiling on the shelf now? Think of addition as making a bigger group!"
+          }
+        ],
+        "quiz": {
+          "questions": [
+            {
+              "question": "How many ice creams? 🍦🍦 + 🍦 = ?",
+              "options": ["2", "3", "4", "5"],
+              "correct": "3",
+              "feedback": "Great job! 2 + 1 = 3 ice creams! 🎉"
+            },
+            {
+              "question": "How many total hearts? ❤️❤️ + ❤️❤️ = ?",
+              "options": ["2", "3", "4", "5"],
+              "correct": "4",
+              "feedback": "Perfect! 2 + 2 = 4 hearts! 🌟"
+            },
+            {
+              "question": "3 + 2 = ?",
+              "options": ["4","5","6","7"],
+              "correct": "5",
+              "feedback": "Yes! 3 plus 2 makes 5."
+            },
+            {
+              "question": "Which shows 1 + 4?",
+              "options": ["🍎🍎🍎","🍎🍎🍎🍎🍎","🍎🍎","🍎"],
+              "correct": "🍎🍎🍎🍎🍎",
+              "feedback": "Five apples is 1 + 4!"
+            },
+            {
+              "question": "If you have 2 stars ⭐⭐ and get 3 more ⭐⭐⭐, total?",
+              "options": ["4","5","6","3"],
+              "correct": "5",
+              "feedback": "2 + 3 = 5 stars — shining! ✨"
+            }
+          ]
+        }
+      },
+      "media": {
+        "type": "image",
+        "src": "/assets/math/addition.svg"
+      }
+    },
+    {
+      "id": "science-water",
+      "title": "Amazing Water Cycle! 💧",
+      "description": "Discover the journey of water 🌊",
+      "type": "lesson",
+      "module": "Science",
+      "duration": "15 min",
+      "difficulty": "easy",
+      "content": {
+        "intro": "Let's explore the magical journey of water! 🌈",
+        "steps": [
+          {
+            "title": "Water Changes Forms! 💫",
+            "content": "Water can be:\n- Liquid like in the ocean 🌊\n- Gas like in clouds ☁️\n- Solid like ice ❄️"
+          },
+          {
+            "title": "The Water Journey 🚀",
+            "content": "1. Sun ☀️ heats water\n2. Water becomes clouds ☁️\n3. Rain falls back down 🌧️\n4. Plants and animals use water 🌱"
+          },
+          {
+            "title": "Story: Raindrop's Trip 💦",
+            "content": "Meet Drip, a raindrop. Drip warms up, floats to the sky, meets friends in a cloud, and falls back to help a little seed grow."
+          }
+        ],
+        "quiz": {
+          "questions": [
+            {
+              "question": "What makes water turn into clouds? ☁️",
+              "options": ["Sun ☀️", "Moon 🌙", "Wind 💨", "Stars ⭐"],
+              "correct": "Sun ☀️",
+              "feedback": "Yes! The sun heats water making it turn into vapor! ✨"
+            },
+            {
+              "question": "What form is snow? ❄️",
+              "options": ["Liquid 💧", "Gas ☁️", "Solid ❄️"],
+              "correct": "Solid ❄️",
+              "feedback": "Correct! Snow is frozen water - a solid! 🎉"
+            },
+            {
+              "question": "What is the name of the process where water goes up and comes down?",
+              "options": ["Water cycle","Food chain","Rock cycle","Day cycle"],
+              "correct": "Water cycle",
+              "feedback": "That's the water cycle!"
+            },
+            {
+              "question": "Which helps seeds grow after rain?",
+              "options": ["Water","Phone","Plastic","Smoke"],
+              "correct": "Water",
+              "feedback": "Plants drink water to grow. 🌱"
+            },
+            {
+              "question": "What heats the oceans most?",
+              "options": ["Sun","Moon","Snow","Clouds"],
+              "correct": "Sun",
+              "feedback": "The sun provides heat energy. ☀️"
+            }
+          ]
+        }
+      },
+      "media": {
+        "type": "image",
+        "src": "/assets/science/water-cycle.svg"
+      }
+    },
+    {
+      "id": "reading-story",
+      "title": "Fun Story Time! 📖",
+      "description": "Read an exciting story about friendship 🤝",
+      "type": "lesson",
+      "module": "Reading",
+      "duration": "10 min",
+      "difficulty": "easy",
+      "content": {
+        "intro": "Get ready for a wonderful story! 📚✨",
+        "steps": [
+          {
+            "title": "The Happy Garden ",
+            "content": "Once there was a little flower  who felt lonely. But then a friendly bee  came to visit!"
+          },
+          {
+            "title": "New Friends ",
+            "content": "Soon, more friends came:\n- A butterfly \n- A ladybug \n- A hummingbird "
+          },
+          {
+            "title": "A Kind Surprise ",
+            "content": "The bee and friends brought drops of water and sunshine songs so the flower could grow taller and smile!"
+          }
+        ],
+        "quiz": {
+          "questions": [
+            {
+              "question": "Who was the flower's first friend? ",
+              "options": ["Butterfly ","Bee ","Ladybug ","Bird "],
+              "correct": "Bee ",
+              "feedback": "Yes! The friendly bee was the first to visit! "
+            },
+            {
+              "question": "Which friend has spots?",
+              "options": ["Bee ","Ladybug ","Hummingbird ","Butterfly "],
+              "correct": "Ladybug ",
+              "feedback": "Ladybugs have cute spots!"
+            },
+            {
+              "question": "What helped the flower grow?",
+              "options": ["Water and songs","Rocks","Snow","Candy"],
+              "correct": "Water and songs",
+              "feedback": "Water and care help plants grow."
+            },
+            {
+              "question": "Which friend can fly and drink nectar?",
+              "options": ["Hummingbird ","Cat","Fish","Dog"],
+              "correct": "Hummingbird ",
+              "feedback": "Hummingbirds love nectar!"
+            }
+          ]
+        }
+      },
+      "media": {
+        "type": "image",
+        "src": "/assets/reading/story.svg"
+      }
+    }
+    ,
+    {
+      "id": "art-drawing",
+      "title": "Happy Drawing! ✏️",
+      "description": "Draw simple shapes and make a friendly character 😊",
+      "type": "lesson",
+      "module": "Art",
+      "duration": "12 min",
+      "difficulty": "easy",
+      "content": {
+        "intro": "Let's draw a smiling character step by step! 🎨",
+        "steps": [
+          {
+            "title": "Step 1: Head and Eyes",
+            "content": "Draw a big circle for the head, then two small circles for eyes. Add a tiny dot inside each eye for sparkle. ✨"
+          },
+          {
+            "title": "Step 2: Smile and Body",
+            "content": "Add a wide smile and a small rounded body. Use simple shapes: circles and ovals. 😄"
+          },
+          {
+            "title": "Step 3: Color It In",
+            "content": "Choose bright colors and fill your drawing. Try sky blue for the background and yellow for happy accents! 🌈"
+          },
+          {
+            "title": "Story: Meet Sunny ☀️",
+            "content": "Sunny is a cheerful character who loves bright colors. Add a hat or a scarf and draw Sunny's pet friend!"
+          }
+        ],
+        "quiz": {
+          "questions": [
+            {
+              "question": "Which shape did we use for the head?",
+              "options": ["Square", "Triangle", "Circle", "Star"],
+              "correct": "Circle",
+              "feedback": "Yes! We used a circle for the head. Great observation! 🎉"
+            },
+            {
+              "question": "What can you add to make the eyes sparkle?",
+              "options": ["Dots", "Lines", "Triangles", "Squares"],
+              "correct": "Dots",
+              "feedback": "Correct — tiny dots make the eyes look sparkly! ✨"
+            },
+            {
+              "question": "Which color is good for a bright sky?",
+              "options": ["Sky blue","Black","Brown","Gray"],
+              "correct": "Sky blue",
+              "feedback": "Sky blue makes drawings cheerful!"
+            },
+            {
+              "question": "What shape is an eye most like?",
+              "options": ["Oval","Triangle","Rectangle","Pentagon"],
+              "correct": "Oval",
+              "feedback": "Ovals work well for cute eyes."
+            },
+            {
+              "question": "What could you add to Sunny?",
+              "options": ["Hat","Fork","Car Tire","Computer"],
+              "correct": "Hat",
+              "feedback": "Accessories make characters fun!"
+            }
+          ]
+        }
+      },
+      "media": {
+        "type": "image",
+        "src": "/assets/art/drawing.svg"
+      }
+    },
+    {
+      "id": "art-colors",
+      "title": "Colors and Mixing 🌈",
+      "description": "Learn primary colors and how they mix to make new colors",
+      "type": "lesson",
+      "module": "Art",
+      "duration": "10 min",
+      "difficulty": "easy",
+      "content": {
+        "intro": "Colors are magical — mix red and blue to get purple! 🎨",
+        "steps": [
+          {
+            "title": "Primary Colors",
+            "content": "The primary colors are red, blue, and yellow. These can be mixed to make other colors. 🔴 🔵 🟡"
+          },
+          {
+            "title": "Mixing Example",
+            "content": "Try mixing red + yellow = orange, blue + yellow = green, red + blue = purple. Try it on paper or with paint! 🖌️"
+          }
+        ],
+        "quiz": {
+          "questions": [
+            {
+              "question": "What do you get when you mix blue and yellow?",
+              "options": ["Green", "Purple", "Orange", "Brown"],
+              "correct": "Green",
+              "feedback": "Great! Blue + Yellow = Green. 🌿"
+            },
+            {
+              "question": "Which is NOT a primary color?",
+              "options": ["Red", "Green", "Blue", "Yellow"],
+              "correct": "Green",
+              "feedback": "Right — green is a secondary color made from blue + yellow. 👍"
+            }
+          ]
+        }
+      },
+      "media": {
+        "type": "image",
+        "src": "/assets/art/colors.svg"
+      }
+    }
+    ,
+    {
+      "id": "math-subtraction",
+      "title": "Subtraction Sleuth! ➖",
+      "description": "Learn how to subtract using fun counters",
+      "type": "lesson",
+      "module": "Math",
+      "duration": "8 min",
+      "difficulty": "easy",
+      "content": {
+        "intro": "Subtraction is taking away. Let's practice with toys! 🧸",
+        "steps": [
+          { "title": "Take Away", "content": "If you have 5 toys and give 2 away, how many left? 5 - 2 = 3" },
+          { "title": "Practice", "content": "Try with different numbers using fingers or counters." }
+        ],
+        "quiz": { "questions": [
+          { "question": "5 - 2 = ?", "options": ["2","3","4","5"], "correct": "3", "feedback": "Yes! 5 minus 2 equals 3. 🎉" },
+          { "question": "3 - 1 = ?", "options": ["1","2","3","4"], "correct": "2", "feedback": "Great! 3 minus 1 equals 2. 👍" }
+        ] }
+      },
+      "media": { "type": "image", "src": "/assets/math/subtraction.svg" }
+    },
+    {
+      "id": "math-shapes",
+      "title": "Shapes Around Us 🔺🔵",
+      "description": "Identify and count basic shapes",
+      "type": "lesson",
+      "module": "Math",
+      "duration": "7 min",
+      "difficulty": "easy",
+      "content": {
+        "intro": "Shapes are everywhere! Let's find circles, squares and triangles.",
+        "steps": [
+          { "title": "Spot Shapes", "content": "Look around and name shapes you see: a clock is a circle, a book is a rectangle." },
+          { "title": "Count Sides", "content": "Triangles have 3 sides, squares have 4 equal sides." }
+        ],
+        "quiz": { "questions": [
+          { "question": "How many sides does a triangle have?", "options": ["2","3","4","5"], "correct": "3", "feedback": "Correct — triangles have 3 sides. ✅" },
+          { "question": "Which shape is round?", "options": ["Square","Triangle","Circle","Rectangle"], "correct": "Circle", "feedback": "Right — circles are round! 🎯" }
+        ] }
+      },
+      "media": { "type": "image", "src": "/assets/math/shapes.svg" }
+    },
+    {
+      "id": "math-quiz-basic",
+      "title": "Quick Math Quiz 🧠",
+      "description": "A short practice quiz on addition and subtraction",
+      "type": "quiz",
+      "module": "Math",
+      "duration": "5 min",
+      "difficulty": "easy",
+      "content": {
+        "intro": "Test your math skills with a short quiz!",
+        "steps": [],
+        "quiz": { "questions": [
+          { "question": "2 + 2 = ?", "options": ["3","4","5","6"], "correct": "4", "feedback": "Nice! 2 + 2 = 4." },
+          { "question": "4 - 1 = ?", "options": ["2","3","1","4"], "correct": "3", "feedback": "Well done! 4 - 1 = 3." }
+        ] }
+      },
+      "media": { "type": "image", "src": "/assets/math/quiz.svg" }
+    },
+    {
+      "id": "science-plants",
+      "title": "Plant Power 🌱",
+      "description": "Learn how plants grow from seeds",
+      "type": "lesson",
+      "module": "Science",
+      "duration": "10 min",
+      "difficulty": "easy",
+      "content": {
+        "intro": "Seeds grow into plants with sunlight and water.",
+        "steps": [
+          { "title": "Seed to Sprout", "content": "Plant a seed in soil, water it, and watch a sprout appear." },
+          { "title": "What Plants Need", "content": "Plants need sun, water, air and soil to grow." }
+        ],
+        "quiz": { "questions": [
+          { "question": "What helps plants grow?", "options": ["Sun","Sugar","Phone","Shoe"], "correct": "Sun", "feedback": "Yes — sunlight helps plants grow! ☀️" },
+          { "question": "Do plants need water?", "options": ["Yes","No"], "correct": "Yes", "feedback": "Correct — water is essential. 💧" }
+        ] }
+      },
+      "media": { "type": "image", "src": "/assets/science/plants.svg" }
+    },
+    {
+      "id": "science-senses",
+      "title": "Our Five Senses 👃👂👀",
+      "description": "Discover sight, smell, touch, taste and hearing",
+      "type": "lesson",
+      "module": "Science",
+      "duration": "9 min",
+      "difficulty": "easy",
+      "content": {
+        "intro": "Our senses help us explore the world.",
+        "steps": [
+          { "title": "Sight and Sound", "content": "We see with our eyes and hear with our ears." },
+          { "title": "Taste and Touch", "content": "Taste with our tongue and feel with our skin. Smell with the nose." }
+        ],
+        "quiz": { "questions": [
+          { "question": "Which sense do we use to hear?", "options": ["Eyes","Ears","Nose","Mouth"], "correct": "Ears", "feedback": "Right — ears help us hear. 🎧" },
+          { "question": "Which sense tastes food?", "options": ["Skin","Tongue","Nose","Hands"], "correct": "Tongue", "feedback": "Yes — the tongue tastes flavors. 😋" }
+        ] }
+      },
+      "media": { "type": "image", "src": "/assets/science/senses.svg" }
+    },
+    {
+      "id": "science-magnets",
+      "title": "Magnets at Play 🧲",
+      "description": "See what objects are magnetic",
+      "type": "lesson",
+      "module": "Science",
+      "duration": "8 min",
+      "difficulty": "easy",
+      "content": {
+        "intro": "Magnets attract some metals like iron.",
+        "steps": [
+          { "title": "Try It", "content": "Use a magnet to test which small objects stick to it." },
+          { "title": "Learn", "content": "Not everything is magnetic — paper and plastic usually are not." }
+        ],
+        "quiz": { "questions": [
+          { "question": "Which item is magnetic?", "options": ["Paper","Plastic","Nail","Bread"], "correct": "Nail", "feedback": "Correct — nails are often metal and magnetic. 🧲" },
+          { "question": "Do magnets stick to wood?", "options": ["Yes","No"], "correct": "No", "feedback": "Right — wood is not magnetic. 🌳" }
+        ] }
+      },
+      "media": { "type": "image", "src": "/assets/science/magnets.svg" }
+    },
+    {
+      "id": "reading-phonics",
+      "title": "Phonics Fun 🔤",
+      "description": "Learn letter sounds and simple words",
+      "type": "lesson",
+      "module": "Reading",
+      "duration": "10 min",
+      "difficulty": "easy",
+      "content": {
+        "intro": "Letters make sounds — put them together to read words.",
+        "steps": [
+          { "title": "Letter Sounds", "content": "Say the sound of each letter: a, b, c." },
+          { "title": "Blend", "content": "Blend sounds to make words: c-a-t = cat." }
+        ],
+        "quiz": { "questions": [
+          { "question": "What word do c-a-t make?", "options": ["cat","dog","car","cup"], "correct": "cat", "feedback": "Yes — c-a-t spells cat. 🐱" },
+          { "question": "What sound does 'b' make?", "options": ["buh","sss","mmm","eee"], "correct": "buh", "feedback": "Good — 'b' makes a 'buh' sound. 👍" }
+        ] }
+      },
+      "media": { "type": "image", "src": "/assets/reading/phonics.svg" }
+    },
+    {
+      "id": "reading-rhymes",
+      "title": "Rhymes and Songs 🎵",
+      "description": "Short rhymes to build phonemic awareness",
+      "type": "lesson",
+      "module": "Reading",
+      "duration": "6 min",
+      "difficulty": "easy",
+      "content": {
+        "intro": "Rhymes are fun and help us hear similar sounds.",
+        "steps": [
+          { "title": "Rhyme Time", "content": "Cat, hat, bat — these words rhyme!" },
+          { "title": "Sing Along", "content": "Try singing simple nursery rhymes to practice." }
+        ],
+        "quiz": { "questions": [
+          { "question": "Which word rhymes with 'cat'?", "options": ["dog","hat","sun","tree"], "correct": "hat", "feedback": "Yes — cat and hat rhyme. 🎶" },
+          { "question": "Do 'sun' and 'fun' rhyme?", "options": ["Yes","No"], "correct": "Yes", "feedback": "Correct — sun and fun rhyme. ☀️" }
+        ] }
+      },
+      "media": { "type": "image", "src": "/assets/reading/rhymes.svg" }
+    },
+    {
+      "id": "reading-words",
+      "title": "Sight Words 📘",
+      "description": "Recognize common sight words",
+      "type": "lesson",
+      "module": "Reading",
+      "duration": "8 min",
+      "difficulty": "easy",
+      "content": {
+        "intro": "Sight words are common words you can learn to recognize quickly.",
+        "steps": [
+          { "title": "Look and Read", "content": "See the word and say it aloud: 'the', 'and', 'is'." },
+          { "title": "Flashcards", "content": "Try simple flashcards to practice sight words." }
+        ],
+        "quiz": { "questions": [
+          { "question": "Which word is a sight word?", "options": ["the","giraffe","elephant","mountain"], "correct": "the", "feedback": "Yes — 'the' is a common sight word." },
+          { "question": "Which word is NOT a sight word?", "options": ["and","is","banana","the"], "correct": "banana", "feedback": "Right — 'banana' is not a basic sight word here." }
+        ] }
+      },
+      "media": { "type": "image", "src": "/assets/reading/words.svg" }
+    },
+    {
+      "id": "art-collage",
+      "title": "Simple Collage ✂️",
+      "description": "Make a collage using paper scraps and stickers",
+      "type": "lesson",
+      "module": "Art",
+      "duration": "12 min",
+      "difficulty": "easy",
+      "content": {
+        "intro": "Cut and paste colorful shapes to make a picture.",
+        "steps": [
+          { "title": "Collect Materials", "content": "Find colored paper, glue, and stickers." },
+          { "title": "Arrange", "content": "Place shapes on paper and glue them down to make a scene." }
+        ],
+        "quiz": { "questions": [
+          { "question": "What do you need to stick things down?", "options": ["Glue","Scissors","Pencil","Spoon"], "correct": "Glue", "feedback": "Yes — glue helps stick the pieces. 🧴" },
+          { "question": "Can you use stickers in a collage?", "options": ["Yes","No"], "correct": "Yes", "feedback": "Correct — stickers add fun details! ⭐" }
+        ] }
+      },
+      "media": { "type": "image", "src": "/assets/art/collage.svg" }
+    },
+    {
+      "id": "art-patterns",
+      "title": "Patterns and Colors 🎨",
+      "description": "Create repeating patterns with shapes and colors",
+      "type": "lesson",
+      "module": "Art",
+      "duration": "9 min",
+      "difficulty": "easy",
+      "content": {
+        "intro": "Patterns repeat — try making stripes or checker patterns.",
+        "steps": [
+          { "title": "Choose Shapes", "content": "Pick a shape and repeat it in a line." },
+          { "title": "Add Color", "content": "Alternate colors to make a pattern stand out." }
+        ],
+        "quiz": { "questions": [
+          { "question": "What is a repeating design called?", "options": ["Pattern","Random","Unique","Solo"], "correct": "Pattern", "feedback": "Yes — repeating designs are patterns. 🟩🟦" },
+          { "question": "Should colors repeat in a pattern?", "options": ["Yes","No"], "correct": "Yes", "feedback": "Correct — repeating colors make patterns clear. 🎨" }
+        ] }
+      },
+      "media": { "type": "image", "src": "/assets/art/patterns.svg" }
+    }
+  ]
+}

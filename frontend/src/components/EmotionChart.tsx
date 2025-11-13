@@ -1,0 +1,73 @@
+/* __FUNLEARN_EMOTION_HELPER__ */
+const api = import.meta?.env?.VITE_API_URL || "http://localhost:5000";
+
+async function __postFrameToBackend(base64Image) {
+  try {
+    const res = await fetch(`${api}/detect`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image_base64: base64Image })
+    });
+    if (!res.ok) {
+      console.error("detect API returned", res.status);
+      return null;
+    }
+    return await res.json();
+  } catch (err) {
+    console.error("Error calling detect endpoint:", err);
+    return null;
+  }
+}
+/* end __FUNLEARN_EMOTION_HELPER__ */const api = (const api = import.meta.env?.VITE_API_URL || "http://localhost:5000";
+
+async function __postFrameToBackend(base64Image) {
+  try {
+    const res = await fetch(`${api}/detect`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image_base64: base64Image })
+    });
+    if (!res.ok) {
+      console.error("detect API returned", res.status);
+      return null;
+    }
+    return await res.json();
+  } catch (err) {
+    console.error("Error calling detect endpoint:", err);
+    return null;
+  }
+}
+/* end helper */
+import React from "react";
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
+
+export type EmotionPoint = { t: string; emotion: string };
+
+const colorFor = (e: string) => (
+  e === 'happy' ? '#10b981' : e === 'sad' ? '#ef4444' : e === 'frustrated' ? '#f59e0b' : '#64748b'
+);
+
+export default function EmotionChart({ data }: { data: EmotionPoint[] }){
+  // Map emotion to ordinal for charting
+  const ordinal = (e: string) => ({ happy: 3, neutral: 2, sad: 1, frustrated: 0 } as any)[e] ?? 2;
+  const series = data.map(d => ({ x: new Date(d.t).toLocaleTimeString(), y: ordinal(d.emotion), emotion: d.emotion }));
+  return (
+    <div className="w-full h-64">
+      <ResponsiveContainer width="100%" height="100%">
+        <LineChart data={series} margin={{ top: 10, right: 20, bottom: 10, left: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis dataKey="x" interval={Math.max(0, Math.floor(series.length/6)-1)} />
+          <YAxis domain={[0,3]} ticks={[0,1,2,3]} tickFormatter={(v)=>({0:'frustr.',1:'sad',2:'neutral',3:'happy'} as any)[v]||v} />
+          <Tooltip formatter={(value:any, name:any, p:any)=> [({0:'frustrated',1:'sad',2:'neutral',3:'happy'} as any)[value]||value, 'emotion']} />
+          <Line type="monotone" dataKey="y" stroke="#3b82f6" strokeWidth={2} dot={{ r: 2 }} />
+        </LineChart>
+      </ResponsiveContainer>
+      {series.length>0 && (
+        <div className="text-xs text-gray-500 mt-1">Latest: <span style={{color: colorFor(series[series.length-1].emotion)}}>{series[series.length-1].emotion}</span></div>
+      )}
+    </div>
+  );
+}
+
+
+

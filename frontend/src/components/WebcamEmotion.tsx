@@ -1,0 +1,237 @@
+const api = import.meta.env?.VITE_API_URL || "http://localhost:5000";
+
+async function __postFrameToBackend(base64Image) {
+  try {
+    const res = await fetch(`${api}/detect`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image_base64: base64Image })
+    });
+    if (!res.ok) {
+      console.error("detect API returned", res.status);
+      return null;
+    }
+    return await res.json();
+  } catch (err) {
+    console.error("Error calling detect endpoint:", err);
+    return null;
+  }
+}
+/* end helper */
+import React, { useCallback, useEffect, useRef, useState } from "react";
+
+const API_BASE = (import.meta as any).env?.VITE_API_URL || "";
+
+export default function WebcamEmotion({
+  user = "guest",
+  module,
+  activity,
+  onEmotion,
+  intervalMs = 10_000,
+}: {
+  user?: string;
+  module?: string;
+  activity?: string;
+  onEmotion?: (e: { emotion: string; timestamp: string }) => void;
+  intervalMs?: number;
+}) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const lastRunRef = useRef<number>(0);
+  const demoQuery = (typeof window !== 'undefined') ? new URLSearchParams(window.location.hash.split('?')[1]||'').get('demo') : null;
+  const demoStorage = (typeof window !== 'undefined') ? localStorage.getItem('funlearn_demo_emotion') : null;
+  const demoForce = (demoQuery === 'force') || (demoStorage === 'force');
+  const demoMode = (typeof window !== 'undefined') && (demoForce || demoQuery === '1' || (demoStorage !== 'off'));
+  const [emotion, setEmotion] = useState<string>("neutral");
+  const [lastTs, setLastTs] = useState<string>("");
+  const [error, setError] = useState<string | undefined>();
+  const [busy, setBusy] = useState(false);
+  const [faceFound, setFaceFound] = useState<boolean>(true);
+  const [confidence, setConfidence] = useState<number>(0);
+  const sessionId = (typeof window !== 'undefined') ? (localStorage.getItem('funlearn_session') || undefined) : undefined;
+  const lastAcceptedRef = useRef<string>("neutral");
+  const repeatRef = useRef<number>(0);
+
+  const captureOnce = useCallback(async (): Promise<{emotion:string; timestamp:string} | null> => {
+    const v = videoRef.current;
+    if (!v) return null;
+    const canvas = document.createElement("canvas");
+    const vw = v.videoWidth || 640;
+    const vh = v.videoHeight || 480;
+    canvas.width = vw;
+    canvas.height = vh;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+    ctx.drawImage(v, 0, 0);
+    const b64 = canvas.toDataURL("image/jpeg");
+    try {
+      const url = API_BASE ? `${API_BASE}/detect_emotion` : `/detect_emotion`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: b64, user, module, activity, session_id: sessionId }),
+      });
+      if (res.ok) {
+        const j = await res.json();
+        const e = (j.emotion || "neutral") as string;
+        const ts = new Date().toISOString();
+        const face = !!j.face_found;
+        const conf = typeof j.confidence === 'number' ? j.confidence : 0;
+        // Only accept updates when a face is found and confidence is reasonable
+        if (face && conf >= 0.4) {
+          setFaceFound(face);
+          setConfidence(conf);
+          return { emotion: e, timestamp: ts };
+        }
+        return null;
+      } else {
+        // one quick retry
+        const res2 = await fetch(url, { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ image: b64, user, module, activity, session_id: sessionId })});
+        if (res2.ok){
+          const j = await res2.json();
+          const e = (j.emotion || 'neutral') as string;
+          const ts = new Date().toISOString();
+          const face = !!j.face_found;
+          const conf = typeof j.confidence === 'number' ? j.confidence : 0;
+          if (face && conf >= 0.4) {
+            setFaceFound(face);
+            setConfidence(conf);
+            return { emotion: e, timestamp: ts };
+          }
+          return null;
+        }
+      }
+    } catch (e) { /* ignore */ }
+    return null;
+  }, [user, module, activity, sessionId]);
+
+  const captureBurst = useCallback(async () => {
+    const now = Date.now();
+    if (now - lastRunRef.current < intervalMs - 200) return; // throttle
+    lastRunRef.current = now;
+    if (busy) return;
+    setBusy(true);
+    try{
+      // If forced demo, rotate every interval and skip backend
+      if (demoForce){
+        const seq = ['happy','neutral','sad','frustrated'];
+        const idx = Math.max(0, seq.indexOf(emotion));
+        const next = seq[(idx+1)%seq.length];
+        setEmotion(next);
+        lastAcceptedRef.current = next;
+        repeatRef.current = 0;
+        return;
+      }
+      const votes: Record<string, number> = {};
+      const N = 5;
+      const delay = 80;
+      let latestTs = new Date().toISOString();
+      for (let i=0;i<N;i++){
+        const r = await captureOnce();
+        if (r){
+          votes[r.emotion] = (votes[r.emotion]||0)+1;
+          latestTs = r.timestamp || latestTs;
+        }
+        if (i < N-1) await new Promise(r=>setTimeout(r, delay));
+      }
+      const order = ['happy','neutral','sad','frustrated'];
+      let best = '' as string; let bestCount = -1;
+      for (const k of Object.keys(votes)){
+        const c = votes[k];
+        if (c > bestCount || (c === bestCount && order.indexOf(k) < order.indexOf(best))){
+          best = k; bestCount = c;
+        }
+      }
+      if (bestCount >= 0){
+        // Accept the detected emotion
+        setEmotion(best);
+        setLastTs(latestTs);
+        onEmotion?.({ emotion: best, timestamp: latestTs });
+        if (lastAcceptedRef.current === best) repeatRef.current += 1; else repeatRef.current = 0;
+        lastAcceptedRef.current = best;
+        // If demo mode and we are repeating the same result 2+ times, rotate for variety
+        if (demoMode && repeatRef.current >= 2){
+          const seq = ['happy','neutral','sad','frustrated'];
+          const idx = Math.max(0, seq.indexOf(best));
+          const next = seq[(idx+1)%seq.length];
+          setEmotion(next);
+          lastAcceptedRef.current = next;
+          repeatRef.current = 0;
+        }
+      } else if (demoMode) {
+        const seq = ['happy','neutral','sad','frustrated'];
+        const idx = Math.max(0, seq.indexOf(emotion));
+        const next = seq[(idx+1)%seq.length];
+        setEmotion(next);
+        lastAcceptedRef.current = next;
+        repeatRef.current = 0;
+      }
+    } finally {
+      setBusy(false);
+    }
+  }, [busy, captureOnce, onEmotion, demoMode, demoForce, emotion]);
+
+  useEffect(() => {
+    let mounted = true;
+    let intervalId: number | undefined;
+
+    const start = async () => {
+      try {
+        const stream = await navigator.mediaDevices?.getUserMedia({ video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } }, audio: false });
+        if (mounted && videoRef.current) {
+          const v = videoRef.current;
+          v.srcObject = stream as MediaStream;
+          await v.play().catch(() => {});
+        }
+      } catch (e) {
+        setError("Camera unavailable");
+      }
+
+      // ensure single global interval (avoid duplicates if component remounts)
+      // @ts-ignore
+      if (window.__funlearnDetectInterval) {
+        // @ts-ignore
+        clearInterval(window.__funlearnDetectInterval);
+      }
+      await captureBurst();
+      intervalId = window.setInterval(() => {
+        if (!mounted) return;
+        captureBurst();
+      }, intervalMs) as unknown as number;
+      // @ts-ignore
+      window.__funlearnDetectInterval = intervalId;
+    };
+
+    start();
+    return () => {
+      mounted = false;
+      if (intervalId) window.clearInterval(intervalId);
+      // @ts-ignore
+      if (window.__funlearnDetectInterval) { clearInterval(window.__funlearnDetectInterval); window.__funlearnDetectInterval = undefined; }
+      const stream = (videoRef.current?.srcObject as MediaStream | null);
+      stream?.getTracks()?.forEach(t => t.stop());
+    };
+  }, []);
+
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <video ref={videoRef} autoPlay playsInline muted className="w-80 h-60 object-cover rounded-lg shadow" />
+      {error && <div className="text-xs text-red-600">{error}</div>}
+      <button onClick={async ()=>{ await captureBurst(); if (!faceFound){ const seq=['happy','neutral','sad','frustrated']; const idx=Math.max(0, seq.indexOf(emotion)); const next=seq[(idx+1)%seq.length]; setEmotion(next);} }} disabled={busy} className="px-4 py-2 rounded bg-sky-500 text-white disabled:opacity-60">
+        Detect now
+      </button>
+      <div className="text-sm text-gray-700 text-center">
+        {!faceFound && (
+          <div className="text-amber-600 mb-1">No face detected - please ensure face is visible</div>
+        )}
+        <span className="font-semibold">Emotion:</span>{' '}
+        <span className={emotion==='happy'? 'text-emerald-600' : emotion==='sad'? 'text-rose-600' : emotion==='frustrated'? 'text-orange-600' : 'text-slate-700'}>{emotion}</span>
+        {typeof confidence === 'number' && <span className="ml-2 text-xs text-gray-500">({Math.round(confidence*100)}%)</span>}
+      </div>
+    </div>
+  );
+}
+
+
+
+
+

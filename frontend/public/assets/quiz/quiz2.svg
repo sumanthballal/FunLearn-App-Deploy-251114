@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200">
+  <rect width="100%" height="100%" fill="#f0fff7"/>
+  <g transform="translate(30,20)">
+    <rect x="20" y="20" width="80" height="80" rx="12" fill="#80d8ff"/>
+    <text x="60" y="68" text-anchor="middle" font-size="20" fill="#003366">3</text>
+  </g>
+</svg>

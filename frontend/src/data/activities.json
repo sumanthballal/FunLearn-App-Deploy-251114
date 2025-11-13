@@ -1,0 +1,4 @@
+﻿[
+  {"id":"math1","module":"math","title":"Counting Practice","type":"lesson","duration":"5m","difficulty":"easy","description":"Count objects and learn addition.","media":null},
+  {"id":"math_quiz_1","module":"math","title":"Addition Quiz","type":"quiz","duration":"7m","difficulty":"medium","description":"Simple addition quiz","questions":[{"question":"2+3?","options":["3","4","5"],"correct":2}]}
+]

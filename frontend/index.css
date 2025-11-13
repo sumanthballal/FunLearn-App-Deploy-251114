@@ -1,0 +1,70 @@
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { 
+  --bg: #E6F4FF; 
+  --primary:#00AEEF;
+}
+
+@layer base {
+  body {
+    margin: 0;
+    font-family: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+    background: var(--bg);
+  }
+
+  /* Custom font classes */
+  .font-brand {
+    font-family: "Orbitron", sans-serif;
+    letter-spacing: 0.02em;
+  }
+
+  .font-display {
+    font-family: "Space Grotesk", sans-serif;
+    letter-spacing: -0.02em;
+  }
+
+  .font-heading {
+    font-family: "Space Grotesk", sans-serif;
+    letter-spacing: -0.03em;
+  }
+
+  .font-body {
+    font-family: "Plus Jakarta Sans", sans-serif;
+  }
+
+  .font-accent {
+    font-family: "Space Grotesk", sans-serif;
+    letter-spacing: -0.01em;
+  }
+}
+
+.container { 
+  max-width: 1100px; 
+  margin: 0 auto; 
+  padding: 24px; 
+}
+
+/* Utility to force emoji-capable fonts for text content that contains emojis */
+.emoji {
+  font-family: "Noto Color Emoji", "Segoe UI Emoji", "Apple Color Emoji", "Segoe UI Symbol", "Twemoji Mozilla", sans-serif;
+}
+
+/* Text gradient utilities */
+.text-gradient-primary {
+  background-image: linear-gradient(90deg, rgb(14 165 233), rgb(59 130 246));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+
+.text-gradient-secondary {
+  background-image: linear-gradient(90deg, rgb(139 92 246), rgb(236 72 153));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+
+/* Dark theme tweaks */
+.dark body {
+  background: #0f172a; /* slate-900 */
+}
+
+.dark .container { color: #e6eef8; }

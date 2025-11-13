@@ -1,0 +1,241 @@
+﻿import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { ErrorBoundary } from "../components/ErrorBoundary";
+import { ActivityError } from "../components/ActivityError";
+import { ActivityCardSkeleton, QuizOptionSkeleton, Skeleton } from "../components/Skeleton";
+import { getActivity } from "../lib/api";
+
+// lightweight inline SVG placeholder used whenever external images fail to load
+const PLACEHOLDER = `data:image/svg+xml;utf8,${encodeURIComponent(
+  `<svg xmlns='http://www.w3.org/2000/svg' width='800' height='450'><rect fill='%23eaf6ff' width='100%' height='100%'/><text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' fill='%2392c6e6' font-family='Arial' font-size='22'>Image unavailable</text></svg>`
+)}
+`;
+
+export default function ActivityDetail(){
+  const { id } = useParams();
+  const [activity, setActivity] = useState<any>(null);
+  const [msg, setMsg] = useState("");
+
+  useEffect(()=> {
+    let mounted = true;
+    
+    const loadActivity = async () => {
+      if (!id) return;
+      try {
+        // If it's a quiz, generate it locally
+        if (id.toString().endsWith('-quiz')) {
+          const moduleKey = id.toString().replace(/-quiz$/,'');
+          const localQuiz = { 
+            id, 
+            type: 'quiz', 
+            module: moduleKey, 
+            title: `${moduleKey.charAt(0).toUpperCase()+moduleKey.slice(1)} Quiz`, 
+            description: 'A short generated quiz', 
+            duration: 5 
+          };
+          if (mounted) setActivity(localQuiz);
+          return;
+        }
+
+        // Otherwise fetch from API
+        const data = await getActivity(id);
+        if (mounted) setActivity(data);
+      } catch (error) {
+        console.error('Failed to load activity:', error);
+        if (mounted) setActivity(null);
+      }
+    };
+
+    loadActivity();
+    return () => { mounted = false; };
+  },[id]);
+
+  const markDone = async () => {
+    try {
+      const rec = { user:"local-user", module: activity?.module ?? "unknown", activity: id, timestamp: new Date().toISOString() };
+      await fetch("/api/progress",{ method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(rec) });
+      setMsg("Saved!");
+    } catch { setMsg("Save failed"); }
+  };
+
+  if (!activity) {
+    return (
+      <div className="min-h-screen p-8 bg-sky-50">
+        <div className="container">
+          <div className="space-y-4">
+            <Skeleton className="h-8 w-1/3" />
+            <Skeleton className="h-4 w-2/3" />
+            <div className="mt-8">
+              <ActivityCardSkeleton />
+            </div>
+            {/* Quiz-like skeleton for better UX during quiz loads */}
+            <div className="mt-8 space-y-6">
+              {[...Array(2)].map((_, i) => (
+                <div key={i} className="bg-white p-4 rounded shadow">
+                  <Skeleton className="h-6 w-3/4 mb-4" />
+                  <div className="grid grid-cols-3 gap-3">
+                    {[...Array(3)].map((_, j) => (
+                      <QuizOptionSkeleton key={j} />
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+  
+  // Simple quiz renderer for activities with type 'quiz'
+  if (activity.type === 'quiz') {
+    // image-based quizzes: each question has options with images
+    const sampleImageQs: Record<string, any[]> = {
+      math: [
+        { q: 'Which picture shows 2+2?', opts: [ {img: '/assets/quiz/quiz1.svg', label:'3'}, {img: '/assets/quiz/quiz2.svg', label:'4'}, {img: '/assets/quiz/quiz3.svg', label:'5'} ], a:1 },
+        { q: 'Choose the pair with 3 items', opts: [ {img: '/assets/quiz/quiz4.svg', label:'2'}, {img: '/assets/quiz/quiz1.svg', label:'3'}, {img: '/assets/quiz/quiz5.svg', label:'4'} ], a:1 }
+      ],
+      science: [
+        { q: 'Which shows evaporation?', opts: [ {img: '/assets/quiz/quiz2.svg', label:'evap'}, {img: '/assets/quiz/quiz3.svg', label:'rain'}, {img: '/assets/quiz/quiz6.svg', label:'snow'} ], a:0 }
+      ],
+      reading: [
+        { q: 'Which image is a fox?', opts: [ {img: '/assets/quiz/quiz3.svg', label:'dog'}, {img: '/assets/quiz/quiz1.svg', label:'fox'}, {img: '/assets/quiz/quiz4.svg', label:'cat'} ], a:1 }
+      ],
+      art: [
+        { q: 'Which is a primary color?', opts: [ {img: '/assets/quiz/quiz5.svg', label:'red'}, {img: '/assets/quiz/quiz6.svg', label:'green'}, {img: '/assets/quiz/quiz2.svg', label:'blue'} ], a:0 }
+      ]
+    };
+    const moduleKey = (activity.module || '').toLowerCase();
+    const qs = sampleImageQs[moduleKey] || sampleImageQs['math'];
+    const [answers, setAnswers] = React.useState<number[]>(Array(qs.length).fill(-1));
+    const [score, setScore] = React.useState<number|null>(null);
+
+    const setAns = (i:number, v:number) => { const copy = [...answers]; copy[i]=v; setAnswers(copy); };
+    const submitQuiz = () => {
+      let s=0; for(let i=0;i<qs.length;i++){ if (answers[i]===qs[i].a) s++; }
+      setScore(s);
+    };
+
+    return (
+      <div className="min-h-screen p-8 bg-sky-50">
+        <div className="container">
+          <h1 className="text-3xl font-bold mb-4">{activity.title}</h1>
+          <p className="text-gray-700 mb-4">{activity.description}</p>
+          <div className="space-y-6">
+            {qs.map((q:any, idx:number)=>(
+              <div key={idx} className="bg-white p-4 rounded shadow">
+                <div className="font-semibold mb-2">{idx+1}. {q.q}</div>
+                <div className="mt-2 grid grid-cols-3 gap-3">
+                  {q.opts.map((o:any,optIdx:number)=>(
+                    <label key={optIdx} className={`block border rounded overflow-hidden cursor-pointer ${answers[idx]===optIdx? 'ring-4 ring-sky-300':''}`} onClick={()=>setAns(idx,optIdx)}>
+                      <img
+                        src={o.img}
+                        alt={o.label}
+                        loading="lazy"
+                        className="w-full h-28 object-cover"
+                        onError={(e)=>{ (e.currentTarget as HTMLImageElement).src = PLACEHOLDER; }}
+                      />
+                    </label>
+                  ))}
+                </div>
+              </div>
+            ))}
+            <div className="flex items-center gap-4">
+              <button onClick={submitQuiz} className="bg-sky-500 text-white px-4 py-2 rounded">Submit Quiz</button>
+              <button onClick={markDone} className="bg-sky-200 text-sky-700 px-4 py-2 rounded">Mark as Done</button>
+              {score!==null && <div className="text-sky-700">Score: {score} / {qs.length}</div>}
+            </div>
+            <div className="mt-2">{msg}</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Non-quiz activity: show animated image or video thumbnail, simple text and Mark as Done
+  const renderMedia = () => {
+    if (!activity.media) return null;
+    if (activity.media.type === 'image') {
+      return <img src={activity.media.src} alt={activity.title} className="w-full max-w-3xl rounded shadow" onError={(e)=>{ (e.currentTarget as HTMLImageElement).src = PLACEHOLDER; }} />;
+    }
+    if (activity.media.type === 'youtube') {
+      // build thumbnail from embed src or id
+      try {
+        const src:string = activity.media.src || '';
+        // support both full embed src and watch?v= links
+        let id = '';
+        const m = src.match(/(?:embed\/|v=)([A-Za-z0-9_-]{6,12})/);
+        if (m) id = m[1];
+        const thumb = id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : null;
+        const watchUrl = id ? `https://www.youtube.com/watch?v=${id}` : activity.media.src;
+        return (
+          <div>
+            {thumb ? (
+              <img src={thumb} alt="video" className="w-full max-w-3xl rounded shadow" onError={(e)=>{ (e.currentTarget as HTMLImageElement).src = PLACEHOLDER; }} />
+            ) : (
+              <div className="w-full max-w-3xl h-64 bg-gradient-to-r from-sky-50 to-sky-100 rounded flex items-center justify-center">
+                <div className="animate-pulse w-36 h-36 bg-sky-300 rounded-full flex items-center justify-center text-white font-bold">Play</div>
+              </div>
+            )}
+            <div className="mt-2">
+              <a
+                className="inline-block bg-sky-500 text-white px-4 py-2 rounded"
+                href={watchUrl}
+                target="_blank"
+                rel="noreferrer"
+                onClick={(e)=>{
+                  // prefer window.open to avoid SPA interference; fallback to link if blocked
+                  try {
+                    e.preventDefault();
+                    const w = window.open(watchUrl, '_blank', 'noopener');
+                    if (!w) { (window.location as any).href = watchUrl; }
+                  } catch { /* fallback to normal link */ }
+                }}
+              >
+                Watch Video
+              </a>
+            </div>
+          </div>
+        );
+      } catch {
+        return <div className="w-full max-w-3xl h-64 bg-gray-200 rounded" />;
+      }
+    }
+    // If the backend provided a video URL alongside a local thumbnail, show it
+    if (activity.video && activity.video.url) {
+      return (
+        <div>
+          {activity.media && activity.media.src ? (
+            <img src={activity.media.src} alt="video" className="w-full max-w-3xl rounded shadow" onError={(e)=>{ (e.currentTarget as HTMLImageElement).src = PLACEHOLDER; }} />
+          ) : (
+            <div className="w-full max-w-3xl h-64 bg-gradient-to-r from-sky-50 to-sky-100 rounded flex items-center justify-center">
+              <div className="animate-pulse w-36 h-36 bg-sky-300 rounded-full flex items-center justify-center text-white font-bold">Play</div>
+            </div>
+          )}
+          <div className="mt-2">
+            <a className="inline-block bg-sky-500 text-white px-4 py-2 rounded" href={activity.video.url} target="_blank" rel="noreferrer" onClick={(e)=>{ try{ e.preventDefault(); const w = window.open(activity.video.url, '_blank','noopener'); if(!w) (window.location as any).href = activity.video.url;}catch{} }}>
+              Watch Video
+            </a>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
+
+
+  return (
+    <div className="min-h-screen p-8 bg-sky-50">
+      <div className="container">
+        <h1 className="text-3xl font-bold mb-4">{activity.title}</h1>
+        <p className="text-gray-700 mb-4">{activity.description}</p>
+        {renderMedia()}
+        <div className="mt-4">
+          <button onClick={markDone} className="bg-sky-500 text-white px-4 py-2 rounded">Mark as Done</button>
+        </div>
+        <div className="mt-2">{msg}</div>
+      </div>
+    </div>
+  );
+}

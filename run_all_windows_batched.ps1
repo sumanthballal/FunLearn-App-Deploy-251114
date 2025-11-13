@@ -1,0 +1,153 @@
+# run_all_windows_batched.ps1
+# Place at project root (same folder as backend/ and frontend/).
+# Run:
+# Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+# .\run_all_windows_batched.ps1
+
+$ErrorActionPreference = "Stop"
+
+# Config
+$Root = Split-Path -Parent $MyInvocation.MyCommand.Definition
+$backendDir = Join-Path $Root "backend"
+$frontendDir = Join-Path $Root "frontend"
+$venvDir = Join-Path $backendDir ".venv"
+$backendLog = Join-Path $backendDir "backend_run.log"
+$frontendLog = Join-Path $frontendDir "frontend_run.log"
+$backendPort = 5000
+$healthUrl = "http://localhost:$backendPort/health"
+$frontendUrl = "http://localhost:5173"
+
+function Write-Ok($m){ Write-Host "[OK] $m" -ForegroundColor Green }
+function Write-Warn($m){ Write-Host "[WARN] $m" -ForegroundColor Yellow }
+function Write-Err($m){ Write-Host "[ERROR] $m" -ForegroundColor Red }
+
+function TailLog($path, $lines = 80){
+    if (Test-Path $path) {
+        Write-Host "---- last $lines lines of $path ----"
+        Get-Content $path -Tail $lines | ForEach-Object { Write-Host $_ }
+        Write-Host "---- end log ----"
+    } else {
+        Write-Warn "Log file not found: $path"
+    }
+}
+
+Write-Host "== Preflight checks =="
+try { Get-Command python -ErrorAction Stop | Out-Null; Write-Ok "python found" } catch { Write-Err "python not found in PATH"; exit 1 }
+try { Get-Command node -ErrorAction Stop | Out-Null; Get-Command npm -ErrorAction Stop | Out-Null; Write-Ok "node & npm found" } catch { Write-Err "node/npm not found in PATH"; exit 1 }
+
+if (-not (Test-Path $backendDir)) { Write-Err "backend directory not found at $backendDir"; exit 1 }
+if (-not (Test-Path $frontendDir)) { Write-Err "frontend directory not found at $frontendDir"; exit 1 }
+
+# Prepare backend venv & install requirements
+Push-Location $backendDir
+try {
+    if (-not (Test-Path $venvDir)) {
+        Write-Host "Creating virtualenv..."
+        python -m venv .venv
+        Write-Ok "Virtualenv created at $venvDir"
+    } else { Write-Ok "Virtualenv exists" }
+
+    $venvPython = Join-Path $venvDir "Scripts\python.exe"
+    if (-not (Test-Path $venvPython)) {
+        Write-Warn "venv python not found; using system python"
+        $venvPython = "python"
+    } else { Write-Ok "venv python: $venvPython" }
+
+    if (Test-Path "requirements.txt") {
+        Write-Host "Installing backend requirements (log -> $backendLog)..."
+        & $venvPython -m pip install --upgrade pip setuptools wheel | Out-Null
+        & $venvPython -m pip install -r requirements.txt 2>&1 | Tee-Object -FilePath $backendLog
+        Write-Ok "Backend requirements installed"
+    } else {
+        Write-Warn "No requirements.txt found in backend"
+    }
+} catch {
+    Write-Err "Backend setup error: $_"
+    Pop-Location; exit 1
+}
+Pop-Location
+
+# Create backend .bat launcher
+$backendBat = Join-Path $backendDir "start_backend.bat"
+$backendBatContent = "@echo off
+REM start backend and redirect logs
+echo Starting backend...
+""%~dp0\.venv\Scripts\python.exe"" app.py > ""%~dp0backend_run.log"" 2>&1
+pause
+"
+# If venv python doesn't exist, use system python in batch
+if (-not (Test-Path (Join-Path $backendDir ".venv\Scripts\python.exe"))) {
+    $backendBatContent = "@echo off
+echo Starting backend using system python...
+python app.py > ""%~dp0backend_run.log"" 2>&1
+pause
+"
+}
+Set-Content -Path $backendBat -Value $backendBatContent -Encoding ASCII
+Write-Ok "Wrote backend launcher: $backendBat"
+
+# Create frontend .bat launcher
+$frontendBat = Join-Path $frontendDir "start_frontend.bat"
+$frontendBatContent = "@echo off
+REM install deps then start vite (logs -> frontend_run.log)
+echo Installing frontend dependencies (may take a while)...
+npm install
+echo Starting frontend (vite)...
+npm run dev > ""%~dp0frontend_run.log"" 2>&1
+pause
+"
+Set-Content -Path $frontendBat -Value $frontendBatContent -Encoding ASCII
+Write-Ok "Wrote frontend launcher: $frontendBat"
+
+# Start backend in new cmd window
+Write-Host "`n== Launching backend window =="
+Start-Process -FilePath "cmd.exe" -ArgumentList "/k `"$backendBat`"" -WorkingDirectory $backendDir
+Write-Ok "Backend process started (separate window). Logs: $backendLog"
+
+# Wait for backend health
+Write-Host "`n== Waiting for backend to be healthy =="
+$max = 20; $i = 0; $ok = $false
+while ($i -lt $max) {
+    Start-Sleep -Seconds 3
+    $i++
+    try {
+        $r = Invoke-WebRequest -UseBasicParsing -Uri $healthUrl -TimeoutSec 3 -ErrorAction Stop
+        if ($r.StatusCode -eq 200) { Write-Ok "Backend healthy (attempt $i)"; $ok = $true; break }
+    } catch {
+        Write-Warn "Attempt ${i}: backend not responding yet..."
+    }
+}
+if (-not $ok) {
+    Write-Err "Backend did not become healthy. Tailing backend log:"
+    TailLog $backendLog 200
+    Write-Err "Open the backend cmd window to see live errors (it was started separately)."
+    exit 1
+}
+
+# Start frontend in new cmd window
+Write-Host "`n== Launching frontend window =="
+Start-Process -FilePath "cmd.exe" -ArgumentList "/k `"$frontendBat`"" -WorkingDirectory $frontendDir
+Write-Ok "Frontend process started (separate window). Logs: $frontendLog"
+
+# Wait for frontend URL
+Write-Host "`n== Waiting for frontend to respond =="
+$maxF = 30; $j = 0; $fok = $false
+while ($j -lt $maxF) {
+    Start-Sleep -Seconds 2
+    $j++
+    try {
+        $r = Invoke-WebRequest -UseBasicParsing -Uri $frontendUrl -TimeoutSec 3 -ErrorAction Stop
+        if ($r.StatusCode -eq 200) { Write-Ok "Frontend responding (attempt $j)"; $fok = $true; break }
+    } catch {
+        Write-Warn "Attempt ${j}: frontend not responding yet..."
+    }
+}
+if (-not $fok) {
+    Write-Err "Frontend did not respond. Tailing frontend log:"
+    TailLog $frontendLog 200
+    Write-Err "Open the frontend cmd window to see live errors."
+    exit 1
+}
+
+Write-Host "`nAll done — frontend: $frontendUrl  backend: $healthUrl"
+Write-Ok ("Open {0} in browser and allow webcam access." -f $frontendUrl)

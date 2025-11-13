@@ -1,0 +1,198 @@
+/* __FUNLEARN_EMOTION_HELPER__ */
+const api = import.meta?.env?.VITE_API_URL || "http://localhost:5000";
+
+async function __postFrameToBackend(base64Image) {
+  try {
+    const res = await fetch(`${api}/detect`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image_base64: base64Image })
+    });
+    if (!res.ok) {
+      console.error("detect API returned", res.status);
+      return null;
+    }
+    return await res.json();
+  } catch (err) {
+    console.error("Error calling detect endpoint:", err);
+    return null;
+  }
+}
+/* end __FUNLEARN_EMOTION_HELPER__ */const api = (const api = import.meta.env?.VITE_API_URL || "http://localhost:5000";
+
+async function __postFrameToBackend(base64Image) {
+  try {
+    const res = await fetch(`${api}/detect`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ image_base64: base64Image })
+    });
+    if (!res.ok) {
+      console.error("detect API returned", res.status);
+      return null;
+    }
+    return await res.json();
+  } catch (err) {
+    console.error("Error calling detect endpoint:", err);
+    return null;
+  }
+}
+/* end helper */
+import React, { useCallback, useEffect, useRef, useState } from "react";
+
+const API_BASE = (import.meta as any).env?.VITE_API_URL || "";
+
+export default function WebcamEmotion({
+  user = "guest",
+  module,
+  activity,
+  onEmotion,
+  intervalMs = 10_000,
+}: {
+  user?: string;
+  module?: string;
+  activity?: string;
+  onEmotion?: (e: { emotion: string; timestamp: string }) => void;
+  intervalMs?: number;
+}) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const [emotion, setEmotion] = useState<string>("neutral");
+  const [lastTs, setLastTs] = useState<string>("");
+  const [error, setError] = useState<string | undefined>();
+  const [busy, setBusy] = useState(false);
+  const [faceFound, setFaceFound] = useState<boolean>(true);
+  const [confidence, setConfidence] = useState<number>(0);
+  const sessionId = (typeof window !== 'undefined') ? (localStorage.getItem('funlearn_session') || undefined) : undefined;
+
+  const captureOnce = useCallback(async (): Promise<{emotion:string; timestamp:string} | null> => {
+    const v = videoRef.current;
+    if (!v) return null;
+    const canvas = document.createElement("canvas");
+    const vw = v.videoWidth || 640;
+    const vh = v.videoHeight || 480;
+    canvas.width = vw;
+    canvas.height = vh;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return null;
+    ctx.drawImage(v, 0, 0);
+    const b64 = canvas.toDataURL("image/jpeg");
+    try {
+      const url = API_BASE ? `${API_BASE}/detect` : `/detect_emotion`;
+      const res = await fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ image: b64, user, module, activity, session_id: sessionId }),
+      });
+      if (res.ok) {
+        const j = await res.json();
+        const e = (j.emotion || "neutral") as string;
+        const ts = (j.timestamp ? new Date(j.timestamp*1000).toISOString() : new Date().toISOString()) as string;
+        setFaceFound(!!j.face_found);
+        if (typeof j.confidence === 'number') setConfidence(j.confidence);
+        return { emotion: e, timestamp: ts };
+      } else {
+        // one quick retry
+        const res2 = await fetch(url, { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ image: b64, user, module, activity, session_id: sessionId })});
+        if (res2.ok){
+          const j = await res2.json();
+          const e = (j.emotion || 'neutral') as string;
+          const ts = (j.timestamp ? new Date(j.timestamp*1000).toISOString() : new Date().toISOString()) as string;
+          setFaceFound(!!j.face_found);
+          if (typeof j.confidence === 'number') setConfidence(j.confidence);
+          return { emotion: e, timestamp: ts };
+        }
+      }
+    } catch (e) { /* ignore */ }
+    return null;
+  }, [user, module, activity, sessionId]);
+
+  const captureBurst = useCallback(async () => {
+    if (busy) return;
+    setBusy(true);
+    try{
+      const votes: Record<string, number> = {};
+      const N = 5;
+      const delay = 80;
+      let latestTs = new Date().toISOString();
+      for (let i=0;i<N;i++){
+        const r = await captureOnce();
+        if (r){
+          votes[r.emotion] = (votes[r.emotion]||0)+1;
+          latestTs = r.timestamp || latestTs;
+        }
+        if (i < N-1) await new Promise(r=>setTimeout(r, delay));
+      }
+      const order = ['happy','neutral','sad','frustrated'];
+      let best = emotion; let bestCount = -1;
+      for (const k of Object.keys(votes)){
+        const c = votes[k];
+        if (c > bestCount || (c === bestCount && order.indexOf(k) < order.indexOf(best))){
+          best = k; bestCount = c;
+        }
+      }
+      if (bestCount >= 0){
+        setEmotion(best);
+        setLastTs(latestTs);
+        onEmotion?.({ emotion: best, timestamp: latestTs });
+      }
+    } finally {
+      setBusy(false);
+    }
+  }, [busy, captureOnce, emotion, onEmotion]);
+
+  useEffect(() => {
+    let mounted = true;
+    let timer: number | undefined;
+
+    const start = async () => {
+      try {
+        const stream = await navigator.mediaDevices?.getUserMedia({ video: { facingMode: "user", width: { ideal: 640 }, height: { ideal: 480 } }, audio: false });
+        if (mounted && videoRef.current) {
+          const v = videoRef.current;
+          v.srcObject = stream as MediaStream;
+          await v.play().catch(() => {});
+        }
+      } catch (e) {
+        setError("Camera unavailable");
+      }
+
+      // start periodic capture burst
+      const loop = async () => {
+        if (!mounted) return;
+        await captureBurst();
+        timer = window.setTimeout(loop, intervalMs) as unknown as number;
+      };
+      timer = window.setTimeout(loop, intervalMs) as unknown as number;
+    };
+
+    start();
+    return () => {
+      mounted = false;
+      if (timer) window.clearTimeout(timer);
+      const stream = (videoRef.current?.srcObject as MediaStream | null);
+      stream?.getTracks()?.forEach(t => t.stop());
+    };
+  }, [intervalMs, captureBurst]);
+
+  return (
+    <div className="flex flex-col items-center gap-2">
+      <video ref={videoRef} autoPlay playsInline muted className="w-80 h-60 object-cover rounded-lg shadow" />
+      {error && <div className="text-xs text-red-600">{error}</div>}
+      <button onClick={captureBurst} disabled={busy} className="px-4 py-2 rounded bg-sky-500 text-white disabled:opacity-60">
+        {busy ? 'Detecting…' : 'Detect now'}
+      </button>
+      <div className="text-sm text-gray-700 text-center">
+        {!faceFound && (
+          <div className="text-amber-600 mb-1">No face detected — please ensure face is visible</div>
+        )}
+        <span className="font-semibold">Emotion:</span>{' '}
+        <span className={emotion==='happy'? 'text-emerald-600' : emotion==='sad'? 'text-rose-600' : emotion==='frustrated'? 'text-orange-600' : 'text-slate-700'}>{emotion}</span>
+        {typeof confidence === 'number' && <span className="ml-2 text-xs text-gray-500">({Math.round(confidence*100)}%)</span>}
+        {lastTs && <div className="text-xs text-gray-500">Last checked: {new Date(lastTs).toLocaleTimeString()}</div>}
+      </div>
+    </div>
+  );
+}
+
+
+
