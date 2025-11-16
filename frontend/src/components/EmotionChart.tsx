@@ -1,12 +1,13 @@
 /* __FUNLEARN_EMOTION_HELPER__ */
-const api = import.meta?.env?.VITE_API_URL || "http://localhost:5000";
+const api = (import.meta as any)?.env?.VITE_API_URL || "";
 
-async function __postFrameToBackend(base64Image) {
+async function __postFrameToBackend(base64Image: string) {
   try {
-    const res = await fetch(`${api}/detect`, {
+    const url = api ? `${api}/detect_emotion` : `/detect_emotion`;
+    const res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ image_base64: base64Image })
+      body: JSON.stringify({ image: base64Image })
     });
     if (!res.ok) {
       console.error("detect API returned", res.status);
@@ -18,25 +19,7 @@ async function __postFrameToBackend(base64Image) {
     return null;
   }
 }
-/* end __FUNLEARN_EMOTION_HELPER__ */const api = (const api = import.meta.env?.VITE_API_URL || "http://localhost:5000";
-
-async function __postFrameToBackend(base64Image) {
-  try {
-    const res = await fetch(`${api}/detect`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ image_base64: base64Image })
-    });
-    if (!res.ok) {
-      console.error("detect API returned", res.status);
-      return null;
-    }
-    return await res.json();
-  } catch (err) {
-    console.error("Error calling detect endpoint:", err);
-    return null;
-  }
-}
+/* end __FUNLEARN_EMOTION_HELPER__ */
 /* end helper */
 import React from "react";
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";

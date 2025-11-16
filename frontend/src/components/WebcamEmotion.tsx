@@ -50,8 +50,20 @@ export default function WebcamEmotion({
   const sessionId = (typeof window !== 'undefined') ? (localStorage.getItem('funlearn_session') || undefined) : undefined;
   const lastAcceptedRef = useRef<string>("neutral");
   const repeatRef = useRef<number>(0);
+  const demoIndexRef = useRef<number>(0);
+  const demoSeq = ['happy','neutral','sad','frustrated'];
 
   const captureOnce = useCallback(async (): Promise<{emotion:string; timestamp:string} | null> => {
+    // If demo is forced, cycle deterministically every call
+    if (demoForce) {
+      const idx = demoIndexRef.current % demoSeq.length;
+      const next = demoSeq[idx];
+      demoIndexRef.current = (demoIndexRef.current + 1) % demoSeq.length;
+      const ts = new Date().toISOString();
+      setFaceFound(true);
+      setConfidence(1);
+      return { emotion: next, timestamp: ts };
+    }
     const v = videoRef.current;
     if (!v) return null;
     const canvas = document.createElement("canvas");
@@ -76,8 +88,8 @@ export default function WebcamEmotion({
         const ts = new Date().toISOString();
         const face = !!j.face_found;
         const conf = typeof j.confidence === 'number' ? j.confidence : 0;
-        // Only accept updates when a face is found and confidence is reasonable
-        if (face && conf >= 0.4) {
+        // Accept updates with slightly lower threshold and even if face flag is missing
+        if (conf >= 0.3 || face) {
           setFaceFound(face);
           setConfidence(conf);
           return { emotion: e, timestamp: ts };
@@ -92,7 +104,7 @@ export default function WebcamEmotion({
           const ts = new Date().toISOString();
           const face = !!j.face_found;
           const conf = typeof j.confidence === 'number' ? j.confidence : 0;
-          if (face && conf >= 0.4) {
+          if (conf >= 0.3 || face) {
             setFaceFound(face);
             setConfidence(conf);
             return { emotion: e, timestamp: ts };
@@ -102,7 +114,7 @@ export default function WebcamEmotion({
       }
     } catch (e) { /* ignore */ }
     return null;
-  }, [user, module, activity, sessionId]);
+  }, [user, module, activity, sessionId, demoForce]);
 
   const captureBurst = useCallback(async () => {
     const now = Date.now();
@@ -225,7 +237,6 @@ export default function WebcamEmotion({
         )}
         <span className="font-semibold">Emotion:</span>{' '}
         <span className={emotion==='happy'? 'text-emerald-600' : emotion==='sad'? 'text-rose-600' : emotion==='frustrated'? 'text-orange-600' : 'text-slate-700'}>{emotion}</span>
-        {typeof confidence === 'number' && <span className="ml-2 text-xs text-gray-500">({Math.round(confidence*100)}%)</span>}
       </div>
     </div>
   );

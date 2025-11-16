@@ -184,22 +184,24 @@ def infer_emotion_detailed(image_np):
                 smile_cascade = cv2.CascadeClassifier(smile_cascade_path)
                 smiles = smile_cascade.detectMultiScale(norm, scaleFactor=1.15, minNeighbors=16)
                 if len(smiles) > 0:
-                    happy_bonus = 0.25
+                    # Strong signal for happy when a smile is detected
+                    happy_bonus = 0.35
+                    return 'happy', float(min(1.0, 0.85 + happy_bonus)), face_found
         except Exception:
             pass
 
         # Class decision
         emotion = 'neutral'
         conf = 0.5
-        # Slightly reduce the neutral band and favor non-neutral when strong signals
-        if mean >= 148 and std >= 21:
+        # Favor non-neutral classes a bit more to avoid constant neutral
+        if mean >= 142 and std >= 18:
             emotion = 'happy'; conf = 0.72 + happy_bonus
-        elif mean < 102 and std < 31:
+        elif mean < 108 and std < 28:
             emotion = 'sad'; conf = 0.66
-        elif std > 53 or (mean < 88 and std >= 25):
-            emotion = 'frustrated'; conf = 0.62
-        elif std < 9.5 or (108 <= mean <= 148 and std <= 25):
-            emotion = 'neutral'; conf = 0.57
+        elif std > 50 or (mean < 95 and std >= 24):
+            emotion = 'frustrated'; conf = 0.64
+        elif std < 9.5 or (110 <= mean <= 145 and std <= 24):
+            emotion = 'neutral'; conf = 0.56
 
         # Bound confidence
         conf = float(max(0.0, min(1.0, conf)))
