@@ -94,12 +94,15 @@ export default function WebcamEmotion({
     const std = Math.sqrt(Math.max(0, variance));
 
     let heuristicEmotion: string = 'neutral';
-    if (mean >= 145 && std >= 22) {
+    if (mean >= 150 && std >= 20) {
       heuristicEmotion = 'happy';
-    } else if (mean < 95 && std < 30) {
+    } else if (mean < 90 && std < 30) {
       heuristicEmotion = 'sad';
-    } else if (std > 50 || (mean < 90 && std >= 25)) {
+    } else if (std > 55) {
       heuristicEmotion = 'frustrated';
+    } else if (mean >= 100 && mean <= 150 && std >= 25 && std <= 45) {
+      // Mid brightness and contrast: treat as confused/unsure
+      heuristicEmotion = 'confused';
     }
 
     // For reliability in the demo, use ONLY the local heuristic and ignore backend
@@ -238,7 +241,6 @@ export default function WebcamEmotion({
             setEmotion(next);
           }
         }}
-        disabled={busy}
         className="px-4 py-2 rounded bg-sky-500 text-white disabled:opacity-60"
       >
         Detect now
@@ -248,7 +250,15 @@ export default function WebcamEmotion({
           <div className="text-amber-600 mb-1">No face detected - please ensure face is visible</div>
         )}
         <span className="font-semibold">Emotion:</span>{' '}
-        <span className={emotion==='happy'? 'text-emerald-600' : emotion==='sad'? 'text-rose-600' : emotion==='frustrated'? 'text-orange-600' : 'text-slate-700'}>{emotion}</span>
+        <span className={
+          emotion === 'happy' ? 'text-emerald-600' :
+          emotion === 'sad' ? 'text-rose-600' :
+          emotion === 'frustrated' ? 'text-orange-600' :
+          emotion === 'confused' ? 'text-purple-600' :
+          'text-slate-700'
+        }>
+          {emotion}
+        </span>
       </div>
     </div>
   );
