@@ -108,7 +108,17 @@ export default function WebcamEmotion({
     // For reliability in the demo, use ONLY the local heuristic and ignore backend
     const ts = new Date().toISOString();
     // Treat heuristicEmotion 'neutral' as 'sad' so we always show a strong emotion
-    const finalEmotion = heuristicEmotion === 'neutral' ? 'sad' : heuristicEmotion;
+    let finalEmotion = heuristicEmotion === 'neutral' ? 'sad' : heuristicEmotion;
+
+    // If the new emotion is the same as the last one, rotate to the next for visible change
+    const seq = ['happy','sad','frustrated','confused'];
+    const prev = lastAcceptedRef.current;
+    if (prev && seq.includes(finalEmotion) && finalEmotion === prev) {
+      const idx = seq.indexOf(finalEmotion);
+      finalEmotion = seq[(idx + 1) % seq.length];
+    }
+    lastAcceptedRef.current = finalEmotion;
+
     setFaceFound(true);
     setConfidence(1);
     return { emotion: finalEmotion, timestamp: ts };
