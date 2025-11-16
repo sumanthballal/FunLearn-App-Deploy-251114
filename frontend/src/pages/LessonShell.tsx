@@ -67,7 +67,6 @@ export default function LessonShell(){
           <div className="mb-4">
             <SubjectAudio subject={modKey} />
           </div>
-          <p className="mb-4">Detected emotion: <b>{emotion}</b></p>
 
           <h2 className="text-xl font-semibold mb-2">Learn through Games</h2>
           {/* Subject-specific game switcher */}
