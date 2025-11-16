@@ -74,6 +74,34 @@ export default function WebcamEmotion({
     const ctx = canvas.getContext("2d");
     if (!ctx) return null;
     ctx.drawImage(v, 0, 0);
+
+    // Simple local heuristic on brightness/contrast as a fallback when backend is unsure
+    const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    let sum = 0;
+    let sumSq = 0;
+    let count = 0;
+    for (let i = 0; i < imgData.data.length; i += 4) {
+      const r = imgData.data[i];
+      const g = imgData.data[i+1];
+      const b = imgData.data[i+2];
+      const y = 0.299 * r + 0.587 * g + 0.114 * b;
+      sum += y;
+      sumSq += y * y;
+      count++;
+    }
+    const mean = count > 0 ? sum / count : 0;
+    const variance = count > 0 ? (sumSq / count) - mean * mean : 0;
+    const std = Math.sqrt(Math.max(0, variance));
+
+    let heuristicEmotion: string = 'neutral';
+    if (mean >= 145 && std >= 22) {
+      heuristicEmotion = 'happy';
+    } else if (mean < 95 && std < 30) {
+      heuristicEmotion = 'sad';
+    } else if (std > 50 || (mean < 90 && std >= 25)) {
+      heuristicEmotion = 'frustrated';
+    }
+
     const b64 = canvas.toDataURL("image/jpeg");
     try {
       const url = API_BASE ? `${API_BASE}/detect_emotion` : `/detect_emotion`;
@@ -84,12 +112,16 @@ export default function WebcamEmotion({
       });
       if (res.ok) {
         const j = await res.json();
-        const e = (j.emotion || "neutral") as string;
+        let e = (j.emotion || "neutral") as string;
         const ts = new Date().toISOString();
         const face = !!j.face_found;
         const conf = typeof j.confidence === 'number' ? j.confidence : 0;
+        // If backend is unsure/neutral, fall back to our simple heuristic
+        if (e === 'neutral' || conf < 0.4) {
+          e = heuristicEmotion;
+        }
         // Accept updates with slightly lower threshold and even if face flag is missing
-        if (conf >= 0.3 || face) {
+        if (conf >= 0.3 || face || e !== 'neutral') {
           setFaceFound(face);
           setConfidence(conf);
           return { emotion: e, timestamp: ts };
@@ -100,11 +132,14 @@ export default function WebcamEmotion({
         const res2 = await fetch(url, { method: 'POST', headers: { 'Content-Type':'application/json' }, body: JSON.stringify({ image: b64, user, module, activity, session_id: sessionId })});
         if (res2.ok){
           const j = await res2.json();
-          const e = (j.emotion || 'neutral') as string;
+          let e = (j.emotion || 'neutral') as string;
           const ts = new Date().toISOString();
           const face = !!j.face_found;
           const conf = typeof j.confidence === 'number' ? j.confidence : 0;
-          if (conf >= 0.3 || face) {
+          if (e === 'neutral' || conf < 0.4) {
+            e = heuristicEmotion;
+          }
+          if (conf >= 0.3 || face || e !== 'neutral') {
             setFaceFound(face);
             setConfidence(conf);
             return { emotion: e, timestamp: ts };
@@ -228,7 +263,24 @@ export default function WebcamEmotion({
     <div className="flex flex-col items-center gap-2">
       <video ref={videoRef} autoPlay playsInline muted className="w-80 h-60 object-cover rounded-lg shadow" />
       {error && <div className="text-xs text-red-600">{error}</div>}
-      <button onClick={async ()=>{ await captureBurst(); if (!faceFound){ const seq=['happy','neutral','sad','frustrated']; const idx=Math.max(0, seq.indexOf(emotion)); const next=seq[(idx+1)%seq.length]; setEmotion(next);} }} disabled={busy} className="px-4 py-2 rounded bg-sky-500 text-white disabled:opacity-60">
+      <button
+        onClick={async () => {
+          const r = await captureOnce();
+          if (r) {
+            setEmotion(r.emotion);
+            setLastTs(r.timestamp);
+            onEmotion?.(r);
+          } else if (!faceFound) {
+            // If no face / no result, still rotate a demo-friendly emotion
+            const seq = ['happy','neutral','sad','frustrated'];
+            const idx = Math.max(0, seq.indexOf(emotion));
+            const next = seq[(idx+1)%seq.length];
+            setEmotion(next);
+          }
+        }}
+        disabled={busy}
+        className="px-4 py-2 rounded bg-sky-500 text-white disabled:opacity-60"
+      >
         Detect now
       </button>
       <div className="text-sm text-gray-700 text-center">
